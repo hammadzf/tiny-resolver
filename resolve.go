@@ -11,7 +11,7 @@ import (
 
 func resolve(name string) net.IP {
 	// We always start with a root nameserver
-	nameserver := net.ParseIP("198.41.0.4")
+	nameserver := net.ParseIP("172.30.0.1")
 	for {
 		reply := dnsQuery(name, nameserver)
 		if ip := getAnswer(reply); ip != nil {
@@ -32,6 +32,10 @@ func resolve(name string) net.IP {
 }
 
 func getAnswer(reply *dns.Msg) net.IP {
+	if len(reply.Answer) == 0 {
+		// quit the program in case of empty Answer section
+		panic("No record found for this query.")
+	}
 	for _, record := range reply.Answer {
 		if record.Header().Rrtype == dns.TypeA {
 			fmt.Println("  ", record)
@@ -72,6 +76,7 @@ func dnsQuery(name string, server net.IP) *dns.Msg {
 
 func main() {
 	name := os.Args[1]
+	//name := "google.com"
 	if !strings.HasSuffix(name, ".") {
 		name = name + "."
 	}
